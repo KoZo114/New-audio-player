@@ -70,11 +70,11 @@ class MP3Player {
     handleFileSelect(event) {
         const files = Array.from(event.target.files);
         
-        // Limit to 20 files
-        const selectedFiles = files.slice(0, 20);
+        // Limit to 30 files
+        const selectedFiles = files.slice(0, 30);
         
-        if (selectedFiles.length > 20) {
-            alert('Only the first 20 files will be loaded.');
+        if (files.length > 30) {
+            alert('一度に読み込めるのは最初の30ファイルまでです。');
         }
 
         // Filter only MP3 files
