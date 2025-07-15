@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple MP3 Player</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- Feather Icons for better UI -->
+    <script src="https://unpkg.com/feather-icons"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Simple MP3 Player</h1>
+            
+            <!-- Usage Notice -->
+            <div class="usage-notice">
+                <div class="notice-toggle" id="notice-toggle">
+                    <i data-feather="info" class="notice-icon"></i>
+                    <span>ご利用前の注意事項</span>
+                    <i data-feather="chevron-down" class="chevron-icon"></i>
+                </div>
+                <div class="notice-content" id="notice-content">
+                    <p class="notice-intro">このアプリは、お客様ご自身が合法的に所有するMP3音楽ファイルを、ウェブブラウザ上で個人的に楽しむためのシンプルな音楽プレイヤーです。</p>
+                    
+                    <h4>【ご利用にあたっての注意点】</h4>
+                    
+                    <div class="notice-section">
+                        <h5>● 著作権の遵守:</h5>
+                        <ul>
+                            <li>本アプリは、楽曲ファイルを一切提供いたしません。お客様ご自身でご用意いただいたMP3ファイルのみを読み込み、再生します。</li>
+                            <li>読み込む楽曲ファイルの著作権については、お客様ご自身で管理する責任があります。著作権を侵害するファイル（例：違法にアップロードされた音源など）の利用は固く禁じます。</li>
+                            <li>本アプリは、読み込んだ楽曲ファイルをインターネット上に送信（公衆送信）する機能は一切ありません。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="notice-section">
+                        <h5>● 私的利用の範囲:</h5>
+                        <ul>
+                            <li>本アプリは、お客様個人の利用を目的としています。楽曲の共有、配信、不特定多数への公開はできません。</li>
+                        </ul>
+                    </div>
+                    
+                    <div class="notice-section">
+                        <h5>● 免責事項:</h5>
+                        <ul>
+                            <li>本アプリの利用により発生した一切の損害について、当方は責任を負いかねます。お客様はご自身の責任において本アプリをご利用ください。</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- File Input Section -->
+        <section class="file-input-section">
+            <label for="mp3-input" class="file-input-label">
+                <i data-feather="upload"></i>
+                Load MP3 Files (up to 20)
+            </label>
+            <input type="file" id="mp3-input" multiple accept=".mp3" style="display: none;">
+            
+            <div class="memory-controls">
+                <button id="save-playlist-btn" class="memory-btn" title="Save current playlist">
+                    <i data-feather="save"></i>
+                    Save Playlist
+                </button>
+                <button id="load-playlist-btn" class="memory-btn" title="Load saved playlist">
+                    <i data-feather="folder-open"></i>
+                    Load Saved
+                </button>
+                <button id="clear-playlist-btn" class="memory-btn" title="Clear saved playlist">
+                    <i data-feather="trash-2"></i>
+                    Clear Saved
+                </button>
+            </div>
+        </section>
+
+        <!-- Current Playing Section -->
+        <section class="current-playing">
+            <div class="current-song">
+                <span id="current-song-name">No song selected</span>
+            </div>
+        </section>
+
+        <!-- Control Section -->
+        <section class="controls">
+            <button id="prev-btn" class="control-btn" title="Previous">
+                <i data-feather="skip-back"></i>
+            </button>
+            <button id="play-pause-btn" class="control-btn play-pause" title="Play/Pause">
+                <i data-feather="play"></i>
+            </button>
+            <button id="next-btn" class="control-btn" title="Next">
+                <i data-feather="skip-forward"></i>
+            </button>
+            <button id="repeat-btn" class="control-btn" title="Repeat Off">
+                <i data-feather="repeat"></i>
+                <span class="repeat-indicator">OFF</span>
+            </button>
+            <button id="shuffle-btn" class="control-btn" title="Shuffle Off">
+                <i data-feather="shuffle"></i>
+                <span class="shuffle-indicator">OFF</span>
+            </button>
+        </section>
+
+        <!-- Playlist Section -->
+        <section class="playlist-section">
+            <h3>Playlist</h3>
+            <div id="playlist" class="playlist">
+                <p class="empty-playlist">No songs loaded. Click "Load MP3 Files" to get started.</p>
+            </div>
+        </section>
+
+        <!-- Hidden Audio Element -->
+        <audio id="audio-player" preload="none"></audio>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Initialize Feather icons
+        feather.replace();
+    </script>
+</body>
+</html>
