@@ -373,59 +373,56 @@ class MP3Player {
     }
 
     updateUI() {
-        // Update play/pause button
-        const playIcon = this.playPauseBtn.querySelector('i');
-        if (playIcon) {
-            if (this.isPlaying) {
-                playIcon.setAttribute('data-feather', 'pause');
-            } else {
-                playIcon.setAttribute('data-feather', 'play');
-            }
-        }
+    // --- Play/Pause アイコンとタイトルを再描画 ---
+    // Featherは<i>を<svg>に置き換えるため、毎回中身を作り直してから feather.replace() します。
+    const iconName = this.isPlaying ? 'pause' : 'play';
+    const titleText = this.isPlaying ? 'Pause' : 'Play';
+    this.playPauseBtn.innerHTML = `<i data-feather="${iconName}"></i>`;
+    this.playPauseBtn.title = titleText;
 
-        // Update repeat button
-        this.repeatBtn.className = 'control-btn';
-        const repeatIndicator = this.repeatBtn.querySelector('.repeat-indicator');
-        switch (this.repeatMode) {
-            case 'off':
-                repeatIndicator.textContent = 'OFF';
-                this.repeatBtn.title = 'Repeat Off';
-                break;
-            case 'one':
-                this.repeatBtn.classList.add('repeat-one');
-                repeatIndicator.textContent = '1';
-                this.repeatBtn.title = 'Repeat One';
-                break;
-            case 'all':
-                this.repeatBtn.classList.add('repeat-all');
-                repeatIndicator.textContent = 'ALL';
-                this.repeatBtn.title = 'Repeat All';
-                break;
-        }
-
-        // Update shuffle button
-        this.shuffleBtn.className = 'control-btn';
-        const shuffleIndicator = this.shuffleBtn.querySelector('.shuffle-indicator');
-        if (this.shuffleMode) {
-            this.shuffleBtn.classList.add('shuffle-active');
-            shuffleIndicator.textContent = 'ON';
-            this.shuffleBtn.title = 'Shuffle On';
-        } else {
-            shuffleIndicator.textContent = 'OFF';
-            this.shuffleBtn.title = 'Shuffle Off';
-        }
-
-        // Update current song display
-        this.updateCurrentSongDisplay();
-
-        // Update playlist
-        this.renderPlaylist();
-
-        // Re-render feather icons
-        if (window.feather && typeof window.feather.replace === 'function') {
-            window.feather.replace();
-        }
+    // --- Repeat ボタン表示 ---
+    this.repeatBtn.className = 'control-btn';
+    const repeatIndicator = this.repeatBtn.querySelector('.repeat-indicator');
+    switch (this.repeatMode) {
+        case 'off':
+            repeatIndicator.textContent = 'OFF';
+            this.repeatBtn.title = 'Repeat Off';
+            break;
+        case 'one':
+            this.repeatBtn.classList.add('repeat-one');
+            repeatIndicator.textContent = '1';
+            this.repeatBtn.title = 'Repeat One';
+            break;
+        case 'all':
+            this.repeatBtn.classList.add('repeat-all');
+            repeatIndicator.textContent = 'ALL';
+            this.repeatBtn.title = 'Repeat All';
+            break;
     }
+
+    // --- Shuffle ボタン表示 ---
+    this.shuffleBtn.className = 'control-btn';
+    const shuffleIndicator = this.shuffleBtn.querySelector('.shuffle-indicator');
+    if (this.shuffleMode) {
+        this.shuffleBtn.classList.add('shuffle-active');
+        shuffleIndicator.textContent = 'ON';
+        this.shuffleBtn.title = 'Shuffle On';
+    } else {
+        shuffleIndicator.textContent = 'OFF';
+        this.shuffleBtn.title = 'Shuffle Off';
+    }
+
+    // --- 曲名表示 ---
+    this.updateCurrentSongDisplay();
+
+    // --- プレイリスト再描画 ---
+    this.renderPlaylist();
+
+    // --- Feather icons を再適用（動的生成分をSVGに差し替え） ---
+    if (window.feather && typeof window.feather.replace === 'function') {
+        window.feather.replace();
+    }
+}
 
     updateCurrentSongDisplay(customText = null) {
         if (customText) {
