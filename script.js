@@ -636,9 +636,4 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-/*
-見た目を少し整える最小CSS（style.cssに任意で追加）
-.song-item .delete-btn{border:none;background:transparent;cursor:pointer;padding:6px;margin-left:8px;border-radius:6px;opacity:.7;transition:opacity .2s,transform .06s,background-color .2s}
-.song-item .delete-btn:hover{opacity:1;background-color:rgba(0,0,0,.06)}
-.song-item .delete-btn:active{transform:scale(.96)}
-*/
+
