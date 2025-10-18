@@ -1,4 +1,4 @@
-// MP3 Player Application
+// MP3 Player Application (with Delete Feature)
 class MP3Player {
     constructor() {
         // DOM elements
@@ -33,10 +33,10 @@ class MP3Player {
     init() {
         // Bind event listeners
         this.bindEvents();
-        
+
         // Load saved playlist if exists
         this.loadSavedPlaylist();
-        
+
         // Update UI
         this.updateUI();
     }
@@ -69,16 +69,16 @@ class MP3Player {
 
     handleFileSelect(event) {
         const files = Array.from(event.target.files);
-        
+
         // Limit to 30 files
         const selectedFiles = files.slice(0, 30);
-        
+
         if (files.length > 30) {
             alert('一度に読み込めるのは最初の30ファイルまでです。');
         }
 
         // Filter only MP3 files
-        const mp3Files = selectedFiles.filter(file => 
+        const mp3Files = selectedFiles.filter(file =>
             file.type === 'audio/mpeg' || file.name.toLowerCase().endsWith('.mp3')
         );
 
@@ -88,10 +88,11 @@ class MP3Player {
         }
 
         // Clear current playlist
+        this.cleanup(); // 既存のblob URLがあれば解放
         this.songs = [];
         this.currentSongIndex = -1;
         this.isPlaying = false;
-        
+
         // Load new songs
         mp3Files.forEach((file, index) => {
             const song = {
@@ -121,6 +122,57 @@ class MP3Player {
         return filename.replace(/\.mp3$/i, '').replace(/[_-]/g, ' ').trim();
     }
 
+    // === 追加: 曲の削除メソッド ===
+    deleteSong(index) {
+        if (index < 0 || index >= this.songs.length) return;
+
+        const wasPlaying = this.isPlaying;
+        const deletingCurrent = index === this.currentSongIndex;
+
+        // メモリリーク回避: Object URL解放
+        try {
+            if (this.songs[index]?.url?.startsWith?.('blob:')) {
+                URL.revokeObjectURL(this.songs[index].url);
+            }
+        } catch (_) {}
+
+        // 配列から削除
+        this.songs.splice(index, 1);
+
+        // インデックス補正
+        if (this.currentSongIndex > index) {
+            this.currentSongIndex--;
+        } else if (deletingCurrent) {
+            // 再生中を消した場合は一旦停止・表示クリア
+            this.audioPlayer.pause();
+            this.isPlaying = false;
+            this.audioPlayer.removeAttribute('src');
+
+            // 残曲があるなら近いインデックスに合わせる（自動再生はしない）
+            this.currentSongIndex = Math.min(index, this.songs.length - 1);
+            if (this.currentSongIndex < 0) {
+                this.currentSongIndex = -1;
+            }
+        }
+
+        // 並び配列を再構築
+        this.originalOrder = this.songs.map((_, i) => i);
+        if (this.shuffleMode) this.generateShuffleOrder();
+
+        // UI更新
+        this.renderPlaylist();
+        this.updateUI();
+        this.updateMemoryButtonStates();
+
+        // もし「削除前が再生中」かつ「曲が残っていて」かつ「現在曲未選択(-1)」なら、
+        // 次に進む動作にしたい場合は下記をアンコメント（好みで）
+        /*
+        if (wasPlaying && this.songs.length > 0 && this.currentSongIndex === -1) {
+            this.playSong(0);
+        }
+        */
+    }
+
     renderPlaylist() {
         if (this.songs.length === 0) {
             this.playlist.innerHTML = '<p class="empty-playlist">No songs loaded. Click "Load MP3 Files" to get started.</p>';
@@ -128,26 +180,44 @@ class MP3Player {
         }
 
         this.playlist.innerHTML = '';
-        
+
         this.songs.forEach((song, index) => {
             const songItem = document.createElement('div');
             songItem.className = 'song-item';
             songItem.dataset.index = index;
-            
+
             if (index === this.currentSongIndex) {
                 songItem.classList.add('playing');
             }
 
             songItem.innerHTML = `
-                <span class="song-name">${song.name}</span>
+                <span class="song-name" title="${song.name}">${song.name}</span>
                 <span class="song-status">${index === this.currentSongIndex ? (this.isPlaying ? 'Playing' : 'Paused') : ''}</span>
+                <button class="delete-btn" title="Delete this track" aria-label="Delete track">
+                    <i data-feather="x"></i>
+                </button>
             `;
 
-            // Add click event to play song
-            songItem.addEventListener('click', () => this.playSong(index));
-            
+            // 行のクリック → 再生（ただし削除ボタンは除外）
+            songItem.addEventListener('click', (e) => {
+                if (e.target.closest('.delete-btn')) return;
+                this.playSong(index);
+            });
+
+            // 削除ボタン
+            const delBtn = songItem.querySelector('.delete-btn');
+            delBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.deleteSong(index);
+            });
+
             this.playlist.appendChild(songItem);
         });
+
+        // 動的に追加したアイコンを更新
+        if (window.feather && typeof window.feather.replace === 'function') {
+            window.feather.replace();
+        }
     }
 
     playSong(index) {
@@ -157,11 +227,11 @@ class MP3Player {
 
         const song = this.songs[index];
         this.currentSongIndex = index;
-        
+
         // Load and play the song
         this.audioPlayer.src = song.url;
         this.audioPlayer.load();
-        
+
         this.audioPlayer.play().then(() => {
             this.isPlaying = true;
             this.updateUI();
@@ -196,7 +266,7 @@ class MP3Player {
                 this.handleAudioError(error);
             });
         }
-        
+
         this.updateUI();
     }
 
@@ -204,7 +274,7 @@ class MP3Player {
         if (this.songs.length === 0) return;
 
         let nextIndex;
-        
+
         if (this.shuffleMode) {
             const currentShuffleIndex = this.shuffleOrder.indexOf(this.currentSongIndex);
             const prevShuffleIndex = currentShuffleIndex > 0 ? currentShuffleIndex - 1 : this.shuffleOrder.length - 1;
@@ -220,7 +290,7 @@ class MP3Player {
         if (this.songs.length === 0) return;
 
         let nextIndex;
-        
+
         if (this.shuffleMode) {
             const currentShuffleIndex = this.shuffleOrder.indexOf(this.currentSongIndex);
             const nextShuffleIndex = currentShuffleIndex < this.shuffleOrder.length - 1 ? currentShuffleIndex + 1 : 0;
@@ -245,24 +315,24 @@ class MP3Player {
                 this.repeatMode = 'off';
                 break;
         }
-        
+
         this.updateUI();
     }
 
     toggleShuffle() {
         this.shuffleMode = !this.shuffleMode;
-        
+
         if (this.shuffleMode) {
             this.generateShuffleOrder();
         }
-        
+
         this.updateUI();
     }
 
     generateShuffleOrder() {
         // Create a shuffled array of indices
         this.shuffleOrder = [...this.originalOrder];
-        
+
         // Fisher-Yates shuffle algorithm
         for (let i = this.shuffleOrder.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
@@ -312,7 +382,7 @@ class MP3Player {
                 playIcon.setAttribute('data-feather', 'play');
             }
         }
-        
+
         // Update repeat button
         this.repeatBtn.className = 'control-btn';
         const repeatIndicator = this.repeatBtn.querySelector('.repeat-indicator');
@@ -352,7 +422,9 @@ class MP3Player {
         this.renderPlaylist();
 
         // Re-render feather icons
-        feather.replace();
+        if (window.feather && typeof window.feather.replace === 'function') {
+            window.feather.replace();
+        }
     }
 
     updateCurrentSongDisplay(customText = null) {
@@ -367,7 +439,7 @@ class MP3Player {
 
     toggleNotice() {
         const isExpanded = this.noticeContent.classList.contains('expanded');
-        
+
         if (isExpanded) {
             this.noticeContent.classList.remove('expanded');
             this.noticeToggle.classList.remove('expanded');
@@ -375,9 +447,11 @@ class MP3Player {
             this.noticeContent.classList.add('expanded');
             this.noticeToggle.classList.add('expanded');
         }
-        
+
         // Re-render feather icons after DOM change
-        feather.replace();
+        if (window.feather && typeof window.feather.replace === 'function') {
+            window.feather.replace();
+        }
     }
 
     // Memory management methods
@@ -419,17 +493,17 @@ class MP3Player {
 
             const playlistData = JSON.parse(savedData);
             const savedDate = new Date(playlistData.timestamp).toLocaleDateString('ja-JP');
-            
+
             const confirmLoad = confirm(
                 `保存されたプレイリスト（${playlistData.songs.length}曲、${savedDate}保存）を読み込みますか？\n\n注意：ファイルの実体は保存されていないため、同じファイルを再度選択する必要があります。`
             );
-            
+
             if (!confirmLoad) return;
 
             // Show file selection dialog with instructions
             alert('保存されたプレイリストの曲名が表示されるので、同じファイルを選択してください。');
             this.showSavedPlaylistInfo(playlistData);
-            
+
         } catch (error) {
             console.error('Error loading playlist:', error);
             alert('プレイリストの読み込みに失敗しました。');
@@ -454,7 +528,7 @@ class MP3Player {
             z-index: 1000;
             box-shadow: 0 4px 20px rgba(0,0,0,0.3);
         `;
-        
+
         tempDiv.innerHTML = `
             <h3 style="margin-top: 0;">保存されたプレイリスト</h3>
             <p style="margin-bottom: 15px; font-size: 14px; color: #666;">
@@ -545,8 +619,8 @@ class MP3Player {
     // Cleanup method to revoke object URLs when needed
     cleanup() {
         this.songs.forEach(song => {
-            if (song.url) {
-                URL.revokeObjectURL(song.url);
+            if (song.url && song.url.startsWith('blob:')) {
+                try { URL.revokeObjectURL(song.url); } catch (_) {}
             }
         });
     }
@@ -555,9 +629,16 @@ class MP3Player {
 // Initialize the MP3 Player when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
     const player = new MP3Player();
-    
+
     // Cleanup URLs when the page is about to unload
     window.addEventListener('beforeunload', () => {
         player.cleanup();
     });
 });
+
+/*
+見た目を少し整える最小CSS（style.cssに任意で追加）
+.song-item .delete-btn{border:none;background:transparent;cursor:pointer;padding:6px;margin-left:8px;border-radius:6px;opacity:.7;transition:opacity .2s,transform .06s,background-color .2s}
+.song-item .delete-btn:hover{opacity:1;background-color:rgba(0,0,0,.06)}
+.song-item .delete-btn:active{transform:scale(.96)}
+*/
