@@ -1,124 +1,157 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ja">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Simple MP3 Player</title>
+    <title>Music Player</title>
     <link rel="stylesheet" href="style.css">
-    <!-- Feather Icons for better UI -->
-    <script src="https://unpkg.com/feather-icons"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <h1>Simple MP3 Player</h1>
-            
-            <!-- Usage Notice -->
-            <div class="usage-notice">
-                <div class="notice-toggle" id="notice-toggle">
-                    <i data-feather="info" class="notice-icon"></i>
-                    <span>ご利用前の注意事項</span>
-                    <i data-feather="chevron-down" class="chevron-icon"></i>
-                </div>
-                <div class="notice-content" id="notice-content">
-                    <p class="notice-intro">このアプリは、お客様ご自身が合法的に所有するMP3音楽ファイルを、ウェブブラウザ上で個人的に楽しむためのシンプルな音楽プレイヤーです。</p>
-                    
-                    <h4>【ご利用にあたっての注意点】</h4>
-                    
-                    <div class="notice-section">
-                        <h5>● 著作権の遵守:</h5>
-                        <ul>
-                            <li>本アプリは、楽曲ファイルを一切提供いたしません。お客様ご自身でご用意いただいたMP3ファイルのみを読み込み、再生します。</li>
-                            <li>読み込む楽曲ファイルの著作権については、お客様ご自身で管理する責任があります。著作権を侵害するファイル（例：違法にアップロードされた音源など）の利用は固く禁じます。</li>
-                            <li>本アプリは、読み込んだ楽曲ファイルをインターネット上に送信（公衆送信）する機能は一切ありません。</li>
-                        </ul>
+    <div class="app">
+
+        <!-- Left Panel: Player -->
+        <div class="player-panel">
+
+            <!-- Header -->
+            <div class="player-header">
+                <h1 class="app-title">Music Player</h1>
+                <button class="notice-btn" id="notice-btn" title="ご利用上の注意">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </button>
+            </div>
+
+            <!-- Album Art -->
+            <div class="album-art-wrap">
+                <div class="album-art" id="album-art">
+                    <div class="disc" id="disc">
+                        <div class="disc-center"></div>
+                        <div class="disc-ring r1"></div>
+                        <div class="disc-ring r2"></div>
+                        <div class="disc-ring r3"></div>
                     </div>
-                    
-                    <div class="notice-section">
-                        <h5>● 私的利用の範囲:</h5>
-                        <ul>
-                            <li>本アプリは、お客様個人の利用を目的としています。楽曲の共有、配信、不特定多数への公開はできません。</li>
-                        </ul>
-                    </div>
-                    
-                    <div class="notice-section">
-                        <h5>● 免責事項:</h5>
-                        <ul>
-                            <li>本アプリの利用により発生した一切の損害について、当方は責任を負いかねます。お客様はご自身の責任において本アプリをご利用ください。</li>
-                        </ul>
+                    <div class="idle-icon" id="idle-icon">
+                        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
                     </div>
                 </div>
+                <div class="visualizer" id="visualizer">
+                    <span></span><span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span><span></span>
+                    <span></span><span></span><span></span><span></span><span></span>
+                </div>
             </div>
-        </header>
 
-        <!-- File Input Section -->
-        <section class="file-input-section">
-            <label for="mp3-input" class="file-input-label">
-                <i data-feather="upload"></i>
-                Load MP3 Files (up to 30)
-            </label>
-            <input type="file" id="mp3-input" multiple accept=".mp3" style="display: none;">
-            
-            <div class="memory-controls">
-                <button id="save-playlist-btn" class="memory-btn" title="Save current playlist">
-                    <i data-feather="save"></i>
-                    Save Playlist
+            <!-- Song Info -->
+            <div class="song-info">
+                <div class="song-title" id="song-title">曲を選択してください</div>
+                <div class="song-meta" id="song-meta">— —</div>
+            </div>
+
+            <!-- Progress -->
+            <div class="progress-section">
+                <div class="progress-bar-wrap" id="progress-wrap">
+                    <div class="progress-bar" id="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                        <div class="progress-thumb" id="progress-thumb"></div>
+                    </div>
+                </div>
+                <div class="time-row">
+                    <span id="time-current">0:00</span>
+                    <span id="time-total">0:00</span>
+                </div>
+            </div>
+
+            <!-- Controls -->
+            <div class="controls">
+                <button class="ctrl-btn mode-btn" id="shuffle-btn" title="シャッフル">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 3 21 3 21 8"/><line x1="4" y1="20" x2="21" y2="3"/><polyline points="21 16 21 21 16 21"/><line x1="15" y1="15" x2="21" y2="21"/></svg>
+                    <span class="mode-dot" id="shuffle-dot"></span>
                 </button>
-                <button id="load-playlist-btn" class="memory-btn" title="Load saved playlist">
-                    <i data-feather="folder-open"></i>
-                    Load Saved
+                <button class="ctrl-btn" id="prev-btn" title="前の曲">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 6h2v12H6zm3.5 6 8.5 6V6z"/></svg>
                 </button>
-                <button id="clear-playlist-btn" class="memory-btn" title="Clear saved playlist">
-                    <i data-feather="trash-2"></i>
-                    Clear Saved
+                <button class="ctrl-btn play-btn" id="play-btn" title="再生/一時停止">
+                    <svg class="icon-play" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                    <svg class="icon-pause" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>
+                </button>
+                <button class="ctrl-btn" id="next-btn" title="次の曲">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 18l8.5-6L6 6v12zM16 6v12h2V6h-2z"/></svg>
+                </button>
+                <button class="ctrl-btn mode-btn" id="repeat-btn" title="リピート">
+                    <svg class="icon-repeat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>
+                    <svg class="icon-repeat-one" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/><text x="10.5" y="14" font-size="7" fill="currentColor" stroke="none" font-weight="bold">1</text></svg>
+                    <span class="mode-dot" id="repeat-dot"></span>
                 </button>
             </div>
-        </section>
 
-        <!-- Current Playing Section -->
-        <section class="current-playing">
-            <div class="current-song">
-                <span id="current-song-name">No song selected</span>
+            <!-- Volume -->
+            <div class="volume-row">
+                <button class="vol-icon-btn" id="mute-btn" title="ミュート">
+                    <svg class="icon-vol-full" viewBox="0 0 24 24" fill="currentColor"><path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+                    <svg class="icon-vol-mute" viewBox="0 0 24 24" fill="currentColor" style="display:none"><path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z"/></svg>
+                </button>
+                <div class="volume-slider-wrap">
+                    <input type="range" class="volume-slider" id="volume-slider" min="0" max="100" value="80">
+                </div>
+                <span class="vol-value" id="vol-value">80</span>
             </div>
-        </section>
 
-        <!-- Control Section -->
-        <section class="controls">
-            <button id="prev-btn" class="control-btn" title="Previous">
-                <i data-feather="skip-back"></i>
-            </button>
-            <button id="play-pause-btn" class="control-btn play-pause" title="Play/Pause">
-                <i data-feather="play"></i>
-            </button>
-            <button id="next-btn" class="control-btn" title="Next">
-                <i data-feather="skip-forward"></i>
-            </button>
-            <button id="repeat-btn" class="control-btn" title="Repeat Off">
-                <i data-feather="repeat"></i>
-                <span class="repeat-indicator">OFF</span>
-            </button>
-            <button id="shuffle-btn" class="control-btn" title="Shuffle Off">
-                <i data-feather="shuffle"></i>
-                <span class="shuffle-indicator">OFF</span>
-            </button>
-        </section>
-
-        <!-- Playlist Section -->
-        <section class="playlist-section">
-            <h3>Playlist</h3>
-            <div id="playlist" class="playlist">
-                <p class="empty-playlist">No songs loaded. Click "Load MP3 Files" to get started.</p>
+            <!-- Load Button -->
+            <div class="load-section">
+                <label for="mp3-input" class="load-btn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                    MP3ファイルを読み込む（最大50曲）
+                </label>
+                <input type="file" id="mp3-input" multiple accept=".mp3,audio/mpeg" style="display:none">
             </div>
-        </section>
 
-        <!-- Hidden Audio Element -->
-        <audio id="audio-player" preload="none"></audio>
+        </div>
+
+        <!-- Right Panel: Playlist -->
+        <div class="playlist-panel">
+            <div class="playlist-header">
+                <h2 class="playlist-title">プレイリスト</h2>
+                <span class="track-count" id="track-count">0曲</span>
+            </div>
+            <div class="playlist-list" id="playlist"></div>
+            <div class="playlist-empty" id="playlist-empty">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                <p>MP3ファイルを読み込んで<br>音楽を楽しもう</p>
+            </div>
+        </div>
+
     </div>
 
+    <!-- Notice Modal -->
+    <div class="modal-overlay" id="modal-overlay">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>ご利用上の注意</h3>
+                <button class="modal-close" id="modal-close">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-intro">このアプリは、お客様ご自身が合法的に所有するMP3音楽ファイルを、ウェブブラウザ上で個人的に楽しむためのシンプルな音楽プレイヤーです。</p>
+                <h4>著作権の遵守</h4>
+                <ul>
+                    <li>本アプリは楽曲ファイルを一切提供しません。お客様ご自身でご用意いただいたMP3ファイルのみを再生します。</li>
+                    <li>読み込む楽曲ファイルの著作権については、お客様ご自身で管理する責任があります。</li>
+                    <li>著作権を侵害するファイルの利用は固く禁じます。</li>
+                    <li>本アプリは読み込んだ楽曲をインターネット上に送信する機能は一切ありません。</li>
+                </ul>
+                <h4>私的利用の範囲</h4>
+                <ul>
+                    <li>本アプリはお客様個人の利用を目的としています。楽曲の共有・配信・不特定多数への公開はできません。</li>
+                </ul>
+                <h4>免責事項</h4>
+                <ul>
+                    <li>本アプリの利用により発生した一切の損害について、当方は責任を負いかねます。</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <audio id="audio" preload="none"></audio>
     <script src="script.js"></script>
-    <script>
-        // Initialize Feather icons
-        feather.replace();
-    </script>
 </body>
 </html>
